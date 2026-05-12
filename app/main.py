@@ -58,7 +58,8 @@ async def create_db_tables() -> None:
     """Создаём таблицы если их нет — безопасно, не удаляет данные."""
     try:
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables ready ✅")
     except Exception as e:
         logger.error(f"Database error: {e}")
