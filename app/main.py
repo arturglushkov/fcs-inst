@@ -53,9 +53,6 @@ def create_dispatcher() -> Dispatcher:
 
 async def create_db_tables() -> None:
     try:
-        # Отдельные соединения для drop и create
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables ready ✅")
