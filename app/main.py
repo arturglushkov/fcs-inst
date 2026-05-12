@@ -1,5 +1,5 @@
 """
-MontazhBot — точка входа.
+MontazhBot — точка ввхода.
 """
 
 import sys
