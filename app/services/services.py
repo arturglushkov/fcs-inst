@@ -92,10 +92,9 @@ class UserService:
     async def register_phone(self, telegram_id: int, phone: str) -> Optional[User]:
         user = await self.repo.get_by_telegram_id(telegram_id)
         if not user:
-            return None
-        existing = await self.repo.get_by_phone(phone)
-        if existing and existing.id != user.id:
-            return None  # телефон уже занят
+            # Создаём пользователя если не существует
+            user = await self.repo.create(telegram_id=telegram_id, first_name="User")
+        # Убираем проверку занятости номера - просто сохраняем
         user.phone = phone
         return await self.repo.save(user)
 
