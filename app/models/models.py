@@ -101,7 +101,7 @@ class User(TimestampMixin, Base):
     last_name: Mapped[Optional[str]] = mapped_column(String(100))
     phone: Mapped[Optional[str]] = mapped_column(String(20), unique=True)
     role: Mapped[UserRole]       = mapped_column(
-        Enum(UserRole, values_callable=lambda x: [e.value for e in x]), nullable=False, default=UserRole.EMPLOYEE
+        String(20), nullable=False, server_default="employee"
     )
     is_active: Mapped[bool]      = mapped_column(Boolean, default=True, nullable=False)
     language_code: Mapped[str]   = mapped_column(String(5), default="ru")
@@ -158,7 +158,7 @@ class SiteObject(TimestampMixin, Base):
     longitude: Mapped[float]    = mapped_column(Float, nullable=False)
     radius_meters: Mapped[int]  = mapped_column(Integer, default=100, nullable=False)
     status: Mapped[ObjectStatus] = mapped_column(
-        Enum(ObjectStatus, values_callable=lambda x: [e.value for e in x]), default=ObjectStatus.ACTIVE, nullable=False
+        String(20), nullable=False, server_default="active"
     )
     planned_hours: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 2))
     start_date: Mapped[Optional[date]]  = mapped_column(Date)
@@ -232,7 +232,7 @@ class Shift(TimestampMixin, Base):
         BigInteger, ForeignKey("site_objects.id", ondelete="CASCADE"), nullable=False
     )
     status: Mapped[ShiftStatus]   = mapped_column(
-        Enum(ShiftStatus, values_callable=lambda x: [e.value for e in x]), default=ShiftStatus.ACTIVE, nullable=False
+        String(20), nullable=False, server_default="active"
     )
     started_at: Mapped[datetime]  = mapped_column(DateTime(timezone=True), nullable=False)
     ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -320,10 +320,10 @@ class Task(TimestampMixin, Base):
         BigInteger, ForeignKey("site_objects.id", ondelete="SET NULL")
     )
     status: Mapped[TaskStatus]   = mapped_column(
-        Enum(TaskStatus, values_callable=lambda x: [e.value for e in x]), default=TaskStatus.PENDING, nullable=False
+        String(20), nullable=False, server_default="pending"
     )
     priority: Mapped[TaskPriority] = mapped_column(
-        Enum(TaskPriority, values_callable=lambda x: [e.value for e in x]), default=TaskPriority.MEDIUM, nullable=False
+        String(20), nullable=False, server_default="medium"
     )
     deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -360,7 +360,7 @@ class Photo(TimestampMixin, Base):
     file_id: Mapped[str]          = mapped_column(String(200), nullable=False)  # Telegram file_id
     s3_key: Mapped[Optional[str]] = mapped_column(String(500))
     s3_url: Mapped[Optional[str]] = mapped_column(String(1000))
-    photo_type: Mapped[PhotoType] = mapped_column(Enum(PhotoType, values_callable=lambda x: [e.value for e in x]), nullable=False)
+    photo_type: Mapped[PhotoType] = mapped_column(String(20), nullable=False)
     shift_id: Mapped[Optional[int]] = mapped_column(
         BigInteger, ForeignKey("shifts.id", ondelete="SET NULL")
     )
@@ -410,7 +410,7 @@ class Notification(TimestampMixin, Base):
         BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     notification_type: Mapped[NotificationType] = mapped_column(
-        Enum(NotificationType, values_callable=lambda x: [e.value for e in x]), nullable=False
+        String(30), nullable=False
     )
     title: Mapped[str]             = mapped_column(String(200), nullable=False)
     body: Mapped[str]              = mapped_column(Text, nullable=False)
