@@ -18,6 +18,7 @@ from aiogram.types import (
 )
 
 from app.core.database.engine import async_session_factory
+from app.core.cache.redis_client import redis_client
 from app.services.services import UserService, ShiftService, TaskService, ReportService
 from app.repositories.repositories import (
     UserRepository, ShiftRepository, SiteObjectRepository,
@@ -97,7 +98,18 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
             language_code=message.from_user.language_code or "ru",
         )
 
-    if created or not user.phone:
+    # Сохраняем в кэш сразу
+    user_dict = {
+        "id": user.id,
+        "telegram_id": user.telegram_id,
+        "first_name": user.first_name,
+        "role": user.role.value,
+        "is_active": user.is_active,
+        "phone": user.phone,
+    }
+    await redis_client.set_user_session(message.from_user.id, user_dict, expire=3600)
+
+    if not user.phone:
         await message.answer(
             "👋 Привет! Я бот для контроля рабочих смен.\n\n"
             "Для начала работы мне нужен твой номер телефона.\n"
@@ -123,10 +135,21 @@ async def process_phone(message: Message, state: FSMContext) -> None:
 
     if not user:
         await message.answer(
-            "❌ Этот номер уже занят другим аккаунтом. Обратитесь к администратору.",
+            "❌ Ошибка регистрации. Попробуй снова /start",
             reply_markup=kb_remove(),
         )
         return
+
+    # Сохраняем в Redis кэш
+    user_dict = {
+        "id": user.id,
+        "telegram_id": user.telegram_id,
+        "first_name": user.first_name,
+        "role": user.role.value,
+        "is_active": user.is_active,
+        "phone": user.phone,
+    }
+    await redis_client.set_user_session(message.from_user.id, user_dict, expire=3600)
 
     await state.clear()
     await message.answer(
