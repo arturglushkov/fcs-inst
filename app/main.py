@@ -1,5 +1,5 @@
 """
-MontazhBot — точка ввхода.
+MontazhBot — точка входа.
 """
 
 import sys
@@ -7,6 +7,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import asyncio
+import sqlalchemy as sa
 import logging
 
 from aiogram import Bot, Dispatcher
@@ -53,6 +54,14 @@ def create_dispatcher() -> Dispatcher:
 
 async def create_db_tables() -> None:
     try:
+        async with engine.begin() as conn:
+            await conn.execute(sa.text("DROP TYPE IF EXISTS userrole CASCADE"))
+            await conn.execute(sa.text("DROP TYPE IF EXISTS shiftstatus CASCADE"))
+            await conn.execute(sa.text("DROP TYPE IF EXISTS taskstatus CASCADE"))
+            await conn.execute(sa.text("DROP TYPE IF EXISTS taskpriority CASCADE"))
+            await conn.execute(sa.text("DROP TYPE IF EXISTS phototype CASCADE"))
+            await conn.execute(sa.text("DROP TYPE IF EXISTS notificationtype CASCADE"))
+            await conn.execute(sa.text("DROP TYPE IF EXISTS objectstatus CASCADE"))
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables ready ✅")
