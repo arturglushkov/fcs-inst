@@ -1,6 +1,5 @@
 """
 MontazhBot — точка входа.
-Таблицы создаются автоматически через SQLAlchemy create_all.
 """
 
 import sys
@@ -21,8 +20,6 @@ from app.bot.handlers.handlers import router as main_router
 from app.bot.middlewares.middlewares import (
     AuthMiddleware, LoggingMiddleware, RateLimitMiddleware, ActiveUserMiddleware,
 )
-
-# Импортируем все модели чтобы Base знал о них
 from app.models.models import (
     User, SiteObject, EmployeeObject, Shift, LocationLog,
     Task, Photo, Notification, WorkSchedule, AuditLog,
@@ -55,11 +52,12 @@ def create_dispatcher() -> Dispatcher:
 
 
 async def create_db_tables() -> None:
-    """Создаём таблицы если их нет — безопасно, не удаляет данные."""
     try:
+        # Отдельные соединения для drop и create
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables ready ✅")
     except Exception as e:
         logger.error(f"Database error: {e}")
@@ -72,17 +70,14 @@ async def main() -> None:
 
     logger.info("Starting MontazhBot...")
 
-    # Создаём таблицы
     await create_db_tables()
 
-    # Redis — необязательно
     try:
         await redis_client.connect()
         logger.info("Redis connected ✅")
     except Exception as e:
         logger.warning(f"Redis unavailable: {e}")
 
-    # Scheduler — необязательно
     try:
         from app.tasks.scheduler import setup_scheduler
         scheduler = setup_scheduler()
@@ -91,7 +86,6 @@ async def main() -> None:
     except Exception as e:
         logger.warning(f"Scheduler failed: {e}")
 
-    # Удаляем старый webhook
     await bot.delete_webhook(drop_pending_updates=True)
     logger.info("MontazhBot polling started ✅")
 
