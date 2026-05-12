@@ -103,7 +103,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
         "id": user.id,
         "telegram_id": user.telegram_id,
         "first_name": user.first_name,
-        "role": user.role.value,
+        "role": user.role if isinstance(user.role, str) else user.role.value,
         "is_active": user.is_active,
         "phone": user.phone,
     }
@@ -145,7 +145,7 @@ async def process_phone(message: Message, state: FSMContext) -> None:
         "id": user.id,
         "telegram_id": user.telegram_id,
         "first_name": user.first_name,
-        "role": user.role.value,
+        "role": user.role if isinstance(user.role, str) else user.role.value,
         "is_active": user.is_active,
         "phone": user.phone,
     }
